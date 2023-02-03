@@ -30,7 +30,7 @@ class _ProductOverViewScreenState extends State<ProductOverViewScreen> {
 
   @override
   void didChangeDependencies() {
-    if(_isInit){
+    if (_isInit) {
       setState(() {
         _isLoading = true;
       });
@@ -74,19 +74,24 @@ class _ProductOverViewScreenState extends State<ProductOverViewScreen> {
             ],
           ),
           Consumer<Cart>(
-              builder: (context, cart, ch) => Badge(
-                  value: cart.itemCount.toString(),
-                  child: ch!,
-              ),
+            builder: (context, cart, ch) => Badge(
+              value: cart.itemCount.toString(),
+              child: ch!,
+            ),
             child: IconButton(
                 onPressed: () {
                   Navigator.of(context).pushNamed(CartScreen.routeName);
-                }, icon: Icon(Icons.shopping_cart)),
+                },
+                icon: Icon(Icons.shopping_cart)),
           )
         ],
       ),
       drawer: AppDrawer(),
-      body: _isLoading ? Center(child: CircularProgressIndicator(),) : ProductsGrid(_showOnlyFavorites),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showOnlyFavorites),
     );
   }
 }
