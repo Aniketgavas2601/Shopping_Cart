@@ -13,12 +13,10 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = Provider.of<Product>(
-      context,listen: false
-    );
-    
-    final cart = Provider.of<Cart>(context,listen: false);
-    
+    final product = Provider.of<Product>(context, listen: false);
+
+    final cart = Provider.of<Cart>(context, listen: false);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -34,14 +32,15 @@ class ProductItem extends StatelessWidget {
         ),
         footer: GridTileBar(
           leading: Consumer<Product>(
-            builder: (context, product, _ ) => IconButton(
-                onPressed: () {
-                  product.toggleFavoriteStatus();
-                },
-                //color: Theme.of(context).accentColor,
-                icon: Icon(product.isFavorite
-                    ? Icons.favorite
-                    : Icons.favorite_border),color: Colors.deepOrange,),
+            builder: (context, product, _) => IconButton(
+              onPressed: () {
+                product.toggleFavoriteStatus();
+              },
+              //color: Theme.of(context).accentColor,
+              icon: Icon(
+                  product.isFavorite ? Icons.favorite : Icons.favorite_border),
+              color: Colors.deepOrange,
+            ),
           ),
           backgroundColor: Colors.black54,
           title: Text(
@@ -51,6 +50,17 @@ class ProductItem extends StatelessWidget {
           trailing: IconButton(
               onPressed: () {
                 cart.addItem(product.id, product.price, product.title);
+                final snackBar = SnackBar(
+                  content: Text(
+                    'Added item to cart! ',
+                  ),
+                  duration: Duration(seconds: 2),
+                  action: SnackBarAction(label: 'UNDO', onPressed: () {
+                    cart.removeSingleItem(product.id);
+                  }),
+                );
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
               },
               color: Theme.of(context).accentColor,
               icon: Icon(Icons.shopping_cart)),
