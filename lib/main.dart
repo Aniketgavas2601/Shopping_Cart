@@ -17,44 +17,56 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(
-            value: Auth()),
-        ChangeNotifierProvider(
-          create: (context) => Products(),
-          //value: Products(),
-        ),
-        ChangeNotifierProvider(
-            create: (context) => Cart()
-          //value: Cart(),
-        ),
-        ChangeNotifierProvider(
-            create: (context) => Orders()
-                //value: Orders()
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-          fontFamily: 'Lato',
-        ),
-        home: AuthScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
-          CartScreen.routeName: (context) => CartScreen(),
-          OrdersScreen.routeName: (context) => OrdersScreen(),
-          UserProductsScreen.routeName: (context) => UserProductsScreen(),
-          EditProductsScreen.routName: (context) => EditProductsScreen(),
-        },
-      ),
-    );
+        providers: [
+          ChangeNotifierProvider.value(
+            value: Auth(),
+          ),
+          ChangeNotifierProxyProvider<Auth, Products>(
+            create: (_) => Products(
+              '',
+              '',
+              [],
+            ),
+
+            update: (context, auth, previousProducts) =>
+                Products(auth.token,
+                    auth.userId,
+                    previousProducts == null ? [] : previousProducts.items),
+          ),
+          ChangeNotifierProvider.value(
+            //create: (context) => Cart()
+            value: Cart(),
+          ),
+          ChangeNotifierProxyProvider<Auth, Orders>(
+              create: (_) => Orders('', []),
+              update: (context, auth, previousOrder) => Orders(auth.token, previousOrder == null ? [] : previousOrder.orders))
+        ],
+        child: Consumer<Auth>(
+          builder: (context, auth, _) =>
+              MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'Flutter Demo',
+                theme: ThemeData(
+                  primarySwatch: Colors.purple,
+                  accentColor: Colors.deepOrange,
+                  fontFamily: 'Lato',
+                ),
+                home: auth.isAuth ? ProductOverViewScreen() : AuthScreen(),
+                routes: {
+                  ProductDetailScreen.routeName: (context) =>
+                      ProductDetailScreen(),
+                  CartScreen.routeName: (context) => CartScreen(),
+                  OrdersScreen.routeName: (context) => OrdersScreen(),
+                  UserProductsScreen.routeName: (context) =>
+                      UserProductsScreen(),
+                  EditProductsScreen.routName: (context) =>
+                      EditProductsScreen(),
+                },
+              ),
+        ));
   }
 }

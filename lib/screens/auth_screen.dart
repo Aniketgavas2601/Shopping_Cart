@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shopping_appl/models/http_exception.dart';
 import 'package:shopping_appl/providers/_auth.dart';
 
 enum AuthMode { signUp, login }
@@ -100,21 +101,57 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
+  void _showErrorDialog(String message){
+    showDialog(context: context, builder: (context) => AlertDialog(title: Text('An error Occured!'),content: Text(message),actions: <Widget>[
+      ElevatedButton(onPressed: (){
+        Navigator.of(context).pop();
+      }, child: Text('Okay'))
+    ],));
+  }
+
   Future<void> _submit() async  {
-    if (_formKey.currentState!.validate()) {
+    print('submit submit submit submit subbmit submit submit submit');
+    if (!_formKey.currentState!.validate()) {
+      print('##########################');
       return;
     }
+    print('***************************');
     _formKey.currentState!.save();
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.login) {
-      // log user in
-    } else {
-      // sign up user
-      await Provider.of<Auth>(context, listen: false)
-          .signUp(_authData['email']!, _authData['password']!);
+    print('4444444444444444444444444');
+    try{
+      if (_authMode == AuthMode.login)  {
+        // log user in
+        await Provider.of<Auth>(context,listen: false).signIn(_authData['email']!, _authData['password']!);
+      } else {
+        // sign up user
+        await Provider.of<Auth>(context, listen: false)
+            .signUp(_authData['email']!, _authData['password']!);
+      }
+    } on HttpException catch(error){
+      var errorMessage = 'Authentication failed';
+      if(error.toString().contains('EMAIL_EXISTS')){
+        errorMessage = 'This email address is already in use.';
+        print(errorMessage);
+      }else if(error.toString().contains('INVALID_EMAIL')){
+        errorMessage = 'This is not a valid email address';
+      }else if(error.toString().contains('WEAK_PASSWORD')){
+        errorMessage = 'This password is too weak';
+      }else if(error.toString().contains('EMAIL_NOT_FOUND')){
+        errorMessage = 'Could not find a user with that email';
+      }else if(error.toString().contains('INVALID_PASSWORD')){
+        errorMessage = 'Invalid password';
+      }
+      print(555555555555555);
+      _showErrorDialog(errorMessage);
+    } catch(error){
+      const errorMessage = 'Could not authenticate you. please try again later';
+      print(6666666666);
+      _showErrorDialog(errorMessage);
     }
+
     setState(() {
       _isLoading = false;
     });
@@ -201,7 +238,9 @@ class _AuthCardState extends State<AuthCard> {
                             backgroundColor: Theme.of(context).primaryColor,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30))),
-                        onPressed: _submit,
+                        onPressed: () {
+                          _submit();
+                        },
                         child: Text(
                           _authMode == AuthMode.login ? 'LOGIN' : 'SIGNUP',
                           style: TextStyle(

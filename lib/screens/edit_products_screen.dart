@@ -17,7 +17,7 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
   final _imageUrlFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   var _editedProduct = Product(
-      id: '${null}', title: '', description: '', price: 0, imageUrl: '');
+      id: ' ', title: '', description: '', price: 0, imageUrl: '');
 
   var _initValues = {
     'title': '',
@@ -89,7 +89,7 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
       _isLoading = true;
     });
 
-    if (_editedProduct.id == null) {
+    if (_editedProduct.id != " ") {
       print("edit edit edit edit edit edit edit edit edit edit edit");
       await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
