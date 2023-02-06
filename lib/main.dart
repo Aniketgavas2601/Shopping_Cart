@@ -10,6 +10,7 @@ import 'package:shopping_appl/screens/proudct_detail_screen.dart';
 import 'package:shopping_appl/providers/products.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_appl/screens/orders_screen.dart';
+import 'package:shopping_appl/screens/splash_screen.dart';
 import 'package:shopping_appl/screens/user_products_screen.dart';
 
 void main() {
@@ -31,42 +32,48 @@ class MyApp extends StatelessWidget {
               '',
               [],
             ),
-
-            update: (context, auth, previousProducts) =>
-                Products(auth.token,
-                    auth.userId,
-                    previousProducts == null ? [] : previousProducts.items),
+            update: (context, auth, previousProducts) => Products(
+                auth.token,
+                auth.userId,
+                previousProducts == null ? [] : previousProducts.items),
           ),
           ChangeNotifierProvider.value(
             //create: (context) => Cart()
             value: Cart(),
           ),
           ChangeNotifierProxyProvider<Auth, Orders>(
-              create: (_) => Orders('', []),
-              update: (context, auth, previousOrder) => Orders(auth.token, previousOrder == null ? [] : previousOrder.orders))
+              create: (_) => Orders('', '', []),
+              update: (context, auth, previousOrder) => Orders(
+                  auth.token,
+                  auth.userId,
+                  previousOrder == null ? [] : previousOrder.orders))
         ],
         child: Consumer<Auth>(
-          builder: (context, auth, _) =>
-              MaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: 'Flutter Demo',
-                theme: ThemeData(
-                  primarySwatch: Colors.purple,
-                  accentColor: Colors.deepOrange,
-                  fontFamily: 'Lato',
-                ),
-                home: auth.isAuth ? ProductOverViewScreen() : AuthScreen(),
-                routes: {
-                  ProductDetailScreen.routeName: (context) =>
-                      ProductDetailScreen(),
-                  CartScreen.routeName: (context) => CartScreen(),
-                  OrdersScreen.routeName: (context) => OrdersScreen(),
-                  UserProductsScreen.routeName: (context) =>
-                      UserProductsScreen(),
-                  EditProductsScreen.routName: (context) =>
-                      EditProductsScreen(),
-                },
-              ),
+          builder: (context, auth, _) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Flutter Demo',
+            theme: ThemeData(
+              primarySwatch: Colors.purple,
+              accentColor: Colors.deepOrange,
+              fontFamily: 'Lato',
+            ),
+            home: auth.isAuth
+                ? ProductOverViewScreen()
+                : FutureBuilder(
+                    future: auth.tryAutoLogin(),
+                    builder: (context, authResultSnapshot) =>
+                        authResultSnapshot.connectionState ==
+                                ConnectionState.waiting
+                            ? SplashScreen()
+                            : AuthScreen()),
+            routes: {
+              ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
+              CartScreen.routeName: (context) => CartScreen(),
+              OrdersScreen.routeName: (context) => OrdersScreen(),
+              UserProductsScreen.routeName: (context) => UserProductsScreen(),
+              EditProductsScreen.routName: (context) => EditProductsScreen(),
+            },
+          ),
         ));
   }
 }
